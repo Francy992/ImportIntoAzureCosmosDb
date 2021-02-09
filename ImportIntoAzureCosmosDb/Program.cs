@@ -1,10 +1,13 @@
 ﻿using ImportIntoAzureCosmosDb.Classes;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Table;
+using Microsoft.Extensions.Configuration;
 using Poste.UserLibraries.Classes;
 using Poste.UserLibraries.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ImportIntoAzureCosmosDb
@@ -29,43 +32,38 @@ namespace ImportIntoAzureCosmosDb
                 var sviluppoEntities = await AzureStorageOperations<ScenariosTableModel>.RetrieveAllEntitiesAsync(sviluppoTable);
                 Console.WriteLine($"Lettura dallo storage di sviluppo completata. Totale righe da importare: {sviluppoEntities.Count}");
 
-                var outputSettings = new AzureStorageSettings(false);
-                CloudTable productionTable = azureStorageManager.GetTable(outputSettings.StorageConnectionString, outputSettings.StorageTableName);
-                var productionEntities = await AzureStorageOperations<ScenariosTableModel>.RetrieveAllEntitiesAsync(productionTable);
-                Console.WriteLine($"Lettura dallo storage di produzione completata. Totale righe da importare: {productionEntities.Count}");
-                var notFoundInProduction = sviluppoEntities.Except(productionEntities).ToList();
-                var partitionKeyNotFound = new List<string>();
-                foreach (var sviluppo in sviluppoEntities)
+               
+                IConfiguration config = new ConfigurationBuilder()
+                                        .AddJsonFile("appsettings.json", true, true)
+                                        .Build();
+                var cosmosDbService = InitializeCosmosClientInstanceAsync(config.GetSection("CosmosDb"));
+                int count = 0;
+                foreach(var x in sviluppoEntities)
                 {
-                    bool found = false;
-                    foreach (var production in productionEntities)
-                    {
-                        if (sviluppo.PartitionKey == production.PartitionKey)
-                        {
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found)
-                        partitionKeyNotFound.Add(sviluppo.PartitionKey);
-                }
-
-                Console.WriteLine($"Trovate {partitionKeyNotFound.Count} partitionKey di sviluppo non presenti in produzione:");
-                foreach (var notFount in partitionKeyNotFound)
-                {
-                    Console.WriteLine($"{notFount}");
-                }
-
-                Console.WriteLine($"Trovate {notFoundInProduction.Count} righe di sviluppo che differiscono per qualcosa in produzione:");
-                foreach (var notFount in notFoundInProduction)
-                {
-                    Console.WriteLine($"{notFount.PartitionKey}");
+                    var temp = new ScenariosTableModelCamelCase(x);
+                    await cosmosDbService.Result.AddItemAsync(temp);
+                    Thread.Sleep(30);
+                    Console.WriteLine($"Inserted '{temp.PartitionKey}'. Count: {++count}");
                 }
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
             }
+        }
+
+        private static async Task<CosmosDbService> InitializeCosmosClientInstanceAsync(IConfigurationSection configurationSection)
+        {
+            string databaseName = configurationSection.GetSection("DatabaseName").Value;
+            string containerName = configurationSection.GetSection("ContainerName").Value;
+            string account = configurationSection.GetSection("Account").Value;
+            string key = configurationSection.GetSection("Key").Value;
+            Microsoft.Azure.Cosmos.CosmosClient client = new Microsoft.Azure.Cosmos.CosmosClient(account, key);
+            CosmosDbService cosmosDbService = new CosmosDbService(client, databaseName, containerName);
+            Microsoft.Azure.Cosmos.DatabaseResponse database = await client.CreateDatabaseIfNotExistsAsync(databaseName);
+            await database.Database.CreateContainerIfNotExistsAsync(containerName, configurationSection.GetSection("PartitionKey").Value);
+
+            return cosmosDbService;
         }
     }
 }
