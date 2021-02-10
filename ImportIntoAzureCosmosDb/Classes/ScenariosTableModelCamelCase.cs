@@ -7,11 +7,11 @@ namespace ImportIntoAzureCosmosDb.Classes
 {
     public class ScenariosTableModelCamelCase
     {
-        [JsonProperty("timeStamp")]
+        [JsonProperty("sourceTimeStamp")]
         public DateTimeOffset Timestamp { get; set; }
         [JsonProperty("id")]
         public string Id { get; set; }
-        [JsonProperty("eTag")]
+        [JsonProperty("sourceETag")]
         public string ETag { get; set; }
         [JsonProperty("partitionKey")]
         public string PartitionKey { get; set; }
