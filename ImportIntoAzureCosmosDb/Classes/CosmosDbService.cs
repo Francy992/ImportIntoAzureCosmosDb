@@ -21,7 +21,7 @@ namespace ImportIntoAzureCosmosDb.Classes
 
         public async Task AddItemAsync(ScenariosTableModelCamelCase item)
         {
-            await this._container.CreateItemAsync<ScenariosTableModelCamelCase>(item, new PartitionKey(item.PartitionKey));
+            await this._container.CreateItemAsync<ScenariosTableModelCamelCase>(item, PartitionKey.None);
         }
 
         public async Task DeleteItemAsync(string id)
