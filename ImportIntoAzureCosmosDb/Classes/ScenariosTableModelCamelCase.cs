@@ -7,33 +7,33 @@ namespace ImportIntoAzureCosmosDb.Classes
 {
     public class ScenariosTableModelCamelCase
     {
-        [JsonProperty("sourceTimeStamp")]
+        [JsonProperty("SourceTimeStamp")]
         public DateTimeOffset Timestamp { get; set; }
         [JsonProperty("id")]
         public string Id { get; set; }
-        [JsonProperty("sourceETag")]
+        [JsonProperty("SourceETag")]
         public string ETag { get; set; }
         [JsonProperty("partitionKey")]
         public string PartitionKey { get; set; }
-        [JsonProperty("rowKey")]
+        [JsonProperty("RowKey")]
         public string RowKey { get; set; }
-        [JsonProperty("changedBy")]
+        [JsonProperty("ChangedBy")]
         public string ChangedBy { get; set; }
-        [JsonProperty("definition")]
+        [JsonProperty("Definition")]
         public string Definition { get; set; }
-        [JsonProperty("isCustomScenario")]
+        [JsonProperty("IsCustomScenario")]
         public bool IsCustomScenario { get; set; }
-        [JsonProperty("status")]
+        [JsonProperty("Status")]
         public string Status { get; set; }
-        [JsonProperty("channels")]
+        [JsonProperty("Channels")]
         public string Channels { get; set; }
-        [JsonProperty("entities")]
+        [JsonProperty("Entities")]
         public string Entities { get; set; }
-        [JsonProperty("intents")]
+        [JsonProperty("Intents")]
         public string Intents { get; set; }
-        [JsonProperty("keywords")]
+        [JsonProperty("Keywords")]
         public string Keywords { get; set; }
-        [JsonProperty("category")]
+        [JsonProperty("Category")]
         public string Category { get; set; }
 
         public ScenariosTableModelCamelCase() { }
